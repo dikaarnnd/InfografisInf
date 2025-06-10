@@ -1,4 +1,4 @@
-// src/components/Timeline.jsx
+// src/components/Puzzle.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
@@ -10,7 +10,6 @@ import { timelineData } from '../components/timelineData';
 
 gsap.registerPlugin(Draggable);
 
-// Komponen Modal
 const EventModal = ({ event, onClose }) => {
   const handleClose = (e) => { e.stopPropagation(); onClose(); };
   return (
@@ -28,14 +27,12 @@ const EventModal = ({ event, onClose }) => {
   );
 };
 
-// ====================================================================
-// Komponen Utama Puzzle Timeline
-// ====================================================================
 const TimelinePuzzle = () => {
   const [pieces, setPieces] = useState([]);
   const [correctlyPlaced, setCorrectlyPlaced] = useState({});
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [showCongrats, setShowCongrats] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [showWrong, setShowWrong] = useState(false);
   const pieceRefs = useRef([]);
 
   useEffect(() => {
@@ -50,6 +47,12 @@ const TimelinePuzzle = () => {
     };
     setPieces(shuffleArray([...timelineData]));
   }, []);
+
+  useEffect(() => {
+    if (Object.keys(correctlyPlaced).length === timelineData.length) {
+      setTimeout(() => setShowPopup(true), 500);
+    }
+  }, [correctlyPlaced]);
 
   useGSAP(() => {
     pieceRefs.current.forEach((piece) => {
@@ -84,7 +87,6 @@ const TimelinePuzzle = () => {
                   droppedCorrectly = true;
                   const slotRect = slot.getBoundingClientRect();
                   const pieceRect = this.target.getBoundingClientRect();
-
                   gsap.to(this.target, {
                     x: this.x + (slotRect.left - pieceRect.left) + (slotRect.width - pieceRect.width) / 2,
                     y: this.y + (slotRect.top - pieceRect.top) + (slotRect.height - pieceRect.height) / 2,
@@ -102,6 +104,8 @@ const TimelinePuzzle = () => {
             });
 
             if (!droppedCorrectly) {
+              setShowWrong(true);
+              setTimeout(() => setShowWrong(false), 2000);
               gsap.to(this.target, { x: 0, y: 0, duration: 0.5, ease: 'power3.out' });
             }
           }
@@ -110,16 +114,9 @@ const TimelinePuzzle = () => {
     });
   }, [pieces]);
 
-  // Deteksi saat semua puzzle sudah benar
-  useEffect(() => {
-    if (Object.keys(correctlyPlaced).length === timelineData.length) {
-      setTimeout(() => {
-        setShowCongrats(true);
-      }, 500);
-    }
-  }, [correctlyPlaced]);
-
-  const handleCloseModal = () => { setSelectedEvent(null); };
+  const handleCloseModal = () => {
+    setSelectedEvent(null);
+  };
 
   return (
     <>
@@ -134,7 +131,7 @@ const TimelinePuzzle = () => {
             <div
               key={slot.id}
               data-slot-id={slot.id}
-              className="puzzle-slot relative  w-48 h-24 bg-gray-700/50 border-2 border-dashed border-gray-500 rounded-lg flex flex-col justify-center items-center text-white"
+              className="puzzle-slot relative w-48 h-24 bg-gray-700/50 border-2 border-dashed border-gray-500 rounded-lg flex flex-col justify-center items-center text-white"
             >
               {correctlyPlaced[slot.id] ? (
                 <div className="w-full h-full p-2 bg-green-600 rounded-lg flex flex-col justify-center items-center text-center">
@@ -173,20 +170,28 @@ const TimelinePuzzle = () => {
         document.body
       )}
 
-      {/* Pop Up Es Teh */}
-      {showCongrats && createPortal(
-        <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-[99999]">
-          <div className="bg-white text-green-700 text-center p-8 rounded-2xl shadow-2xl max-w-sm w-full animate-bounce-in">
-            <h2 className="text-2xl font-bold mb-4">🎉 Selamat! 🎉</h2>
-            <p className="text-lg">Anda berhasil menyusun semua puzzle dengan benar!</p>
-            <p className="text-xl mt-2 font-semibold">🥤 Anda mendapat <span className="text-indigo-600">es teh</span>!</p>
-            <button
-              onClick={() => setShowCongrats(false)}
-              className="mt-6 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-            >
-              Tutup
-            </button>
-          </div>
+      {showPopup && createPortal(
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[9999]" onClick={() => setShowPopup(false)}>
+    <div
+      className="relative bg-white text-green-700 text-3xl font-bold px-8 py-6 rounded-xl shadow-xl animate-bounce"
+      onClick={(e) => e.stopPropagation()}
+    >
+      🎉 Selamat! Anda mendapat es teh!
+      <button
+        onClick={() => setShowPopup(false)}
+        className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 text-white rounded-full text-lg flex items-center justify-center hover:bg-red-700 transition-transform hover:scale-110"
+      >
+        &times;
+      </button>
+    </div>
+  </div>,
+  document.body
+)}
+
+
+      {showWrong && createPortal(
+        <div className="fixed top-6 right-6 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-[9999] animate-slide-fade">
+          ❌ Salah cuyy!
         </div>,
         document.body
       )}

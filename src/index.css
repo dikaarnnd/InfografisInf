@@ -29,3 +29,21 @@ html {
 .animate-bounce-in {
   animation: bounce-in 0.5s ease-out;
 }
+
+@keyframes slide-fade {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-slide-fade {
+  animation: slide-fade 2s ease forwards;
+}

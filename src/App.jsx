@@ -18,6 +18,7 @@ import Footer from './components/Footer';
 import EventModal from './components/EventModal';
 import Timeline from './components/Timeline';
 import TimelinePuzzle from './components/Puzzle';
+import TimelinePuzzle2 from './components/Puzzle2';
 
 // Registrasi plugin GSAP
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, TextPlugin, Draggable, MotionPathPlugin);
@@ -43,7 +44,8 @@ function App() {
         {/* <DraggableElementSection /> */}
         {/* <InteractivePathSection /> */}
         {/* <Timeline /> */}
-        <TimelinePuzzle />
+        {/* <TimelinePuzzle /> */}
+        <TimelinePuzzle2 />
         
       </main>
       {/* <Footer /> */}
