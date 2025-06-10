@@ -142,7 +142,7 @@ const TimelinePuzzle = () => {
             <div
               key={slot.id}
               data-slot-id={slot.id} // ID untuk pencocokan
-              className="puzzle-slot relative  w-48 h-24 bg-gray-700/50 border-2 border-dashed border-gray-500 rounded-lg flex flex-col justify-center items-center text-white"
+              className="puzzle-slot relative w-48 h-24 bg-gray-700/50 border-2 border-dashed border-gray-500 rounded-lg flex flex-col justify-center items-center text-white z-[50]"
             >
               {correctlyPlaced[slot.id] ? (
                 // Jika sudah terisi benar, tampilkan kartu versi "sukses"
@@ -162,7 +162,7 @@ const TimelinePuzzle = () => {
         </div>
 
         {/* === AREA BAWAH: KEPINGAN PUZZLE === */}
-        <div className="relative z-20 w-full sm:h-full h-48 bg-black/20 rounded-xl mt-4 p-4 flex justify-center items-center flex-wrap gap-4 overflow-y-auto">
+        <div className="relative z-20 w-full sm:h-full h-48 bg-black/20 rounded-xl mt-4 p-4 flex justify-center items-center flex-wrap gap-4">
           {pieces.map((piece, index) => {
             // Jangan render kepingan puzzle yang sudah diletakkan dengan benar
             if (correctlyPlaced[piece.id]) return null;
@@ -172,7 +172,7 @@ const TimelinePuzzle = () => {
                 key={piece.id}
                 ref={el => pieceRefs.current[index] = el} // Simpan ref elemen ini
                 data-piece-id={piece.id} // ID untuk pencocokan
-                className="puzzle-piece w-48 h-24 p-2 bg-indigo-600 rounded-lg text-white text-center flex justify-center items-center cursor-grab shadow-lg"
+                className="puzzle-piece w-48 h-24 p-2 bg-indigo-600 rounded-lg text-white text-center flex justify-center items-center cursor-grab shadow-lg z-[60]"
               >
                 <h3 className="text-md font-semibold">{piece.title}</h3>
               </div>
