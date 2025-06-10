@@ -15,6 +15,9 @@ import DraggableElementSection from './components/DraggableElementSection';
 import PluginOverviewSection from './components/PluginOverviewSection';
 import Footer from './components/Footer';
 
+import EventModal from './components/EventModal';
+import Timeline from './components/Timeline';
+
 // Registrasi plugin GSAP
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, TextPlugin, Draggable, MotionPathPlugin);
 
@@ -33,11 +36,13 @@ function App() {
     <div className="flex flex-col min-h-screen">
       {/* <Navbar /> */}
       <main className="flex-grow">
-        <HeroSection />
+        {/* <HeroSection />
         <PluginOverviewSection />
-        <FeaturesSection />
+        <FeaturesSection /> */}
         {/* <DraggableElementSection /> */}
-        <InteractivePathSection />
+        {/* <InteractivePathSection /> */}
+        <Timeline />
+        
       </main>
       {/* <Footer /> */}
     </div>
