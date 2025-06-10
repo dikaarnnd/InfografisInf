@@ -237,7 +237,7 @@ const TimelinePuzzle = () => {
       {showPopup && createPortal(
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[9999]" onClick={() => setShowPopup(false)}>
           <div
-            className="relative bg-white text-green-700 px-4 py-4 sm:px-8 sm:py-6 rounded-xl shadow-xl animate-bounce text-xl sm:text-2xl md:text-3xl font-bold"
+            className="relative mx-5 bg-white text-green-700 px-4 py-4 sm:px-8 sm:py-6 rounded-xl shadow-xl animate-bounce text-xl sm:text-2xl md:text-3xl font-bold"
             onClick={(e) => e.stopPropagation()}
           >
             🎉 Selamat! Anda mendapat es teh!
