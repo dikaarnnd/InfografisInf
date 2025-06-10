@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useLayoutEffect } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { TextPlugin } from 'gsap/TextPlugin'; // TextPlugin adalah bagian dari GSAP core
+import { Draggable } from 'gsap/Draggable';
+import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
+
+// Komponen-komponen section
+import Navbar from './components/Navbar';
+import HeroSection from './components/HeroSection';
+import FeaturesSection from './components/FeaturesSection';
+import InteractivePathSection from './components/InteractivePathSection';
+import DraggableElementSection from './components/DraggableElementSection';
+import PluginOverviewSection from './components/PluginOverviewSection';
+import Footer from './components/Footer';
+
+// Registrasi plugin GSAP
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, TextPlugin, Draggable, MotionPathPlugin);
 
 function App() {
-  const [count, setCount] = useState(0)
+  // useLayoutEffect untuk memastikan DOM siap sebelum GSAP berinteraksi dengannya
+  useLayoutEffect(() => {
+    // Inisialisasi global GSAP (jika ada) bisa dilakukan di sini
+    // Contoh: GSDevTools.create(); (jika Anda punya dan mengimpornya)
+    return () => {
+      // Cleanup global GSAP saat komponen unmount (jika perlu)
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill()); // Hapus semua ScrollTriggers
+    };
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="flex flex-col min-h-screen">
+      {/* <Navbar /> */}
+      <main className="flex-grow">
+        <HeroSection />
+        <FeaturesSection />
+        <InteractivePathSection />
+        <DraggableElementSection />
+        <PluginOverviewSection />
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+export default App;
