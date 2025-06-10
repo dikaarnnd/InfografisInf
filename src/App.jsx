@@ -33,11 +33,11 @@ function App() {
     <div className="flex flex-col min-h-screen">
       {/* <Navbar /> */}
       <main className="flex-grow">
-        <PluginOverviewSection />
         <HeroSection />
+        <PluginOverviewSection />
         <FeaturesSection />
+        {/* <DraggableElementSection /> */}
         <InteractivePathSection />
-        <DraggableElementSection />
       </main>
       {/* <Footer /> */}
     </div>
