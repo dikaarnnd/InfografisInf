@@ -10,7 +10,7 @@ import { timelineData } from '../components/timelineData';
 
 gsap.registerPlugin(Draggable);
 
-// Komponen Modal tidak perlu diubah, kita gunakan lagi.
+// Komponen Modal
 const EventModal = ({ event, onClose }) => {
   const handleClose = (e) => { e.stopPropagation(); onClose(); };
   return (
@@ -28,20 +28,17 @@ const EventModal = ({ event, onClose }) => {
   );
 };
 
-
 // ====================================================================
 // Komponen Utama Puzzle Timeline
 // ====================================================================
 const TimelinePuzzle = () => {
-  // === STATE BARU UNTUK PUZZLE ===
-  const [pieces, setPieces] = useState([]); // Kepingan puzzle yang akan diacak
-  const [correctlyPlaced, setCorrectlyPlaced] = useState({}); // Untuk melacak puzzle yg sudah benar
-  const [selectedEvent, setSelectedEvent] = useState(null); // State untuk modal (tetap sama)
-  const pieceRefs = useRef([]); // Ref untuk setiap kepingan puzzle
+  const [pieces, setPieces] = useState([]);
+  const [correctlyPlaced, setCorrectlyPlaced] = useState({});
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showCongrats, setShowCongrats] = useState(false);
+  const pieceRefs = useRef([]);
 
-  // === LANGKAH 1: ACAK PUZZLE SAAT KOMPONEN DIMUAT ===
   useEffect(() => {
-    // Fungsi untuk mengacak urutan array (Fisher-Yates shuffle)
     const shuffleArray = (array) => {
       let currentIndex = array.length, randomIndex;
       while (currentIndex !== 0) {
@@ -52,106 +49,99 @@ const TimelinePuzzle = () => {
       return array;
     };
     setPieces(shuffleArray([...timelineData]));
-  }, []); // [] berarti hanya dijalankan sekali saat komponen pertama kali render
+  }, []);
 
-  
-  // === LANGKAH 2: MEMBUAT SETIAP KEPINGAN PUZZLE DRAGGABLE ===
   useGSAP(() => {
     pieceRefs.current.forEach((piece) => {
-      if (piece) { // Pastikan elemennya ada
+      if (piece) {
         Draggable.create(piece, {
-        bounds: "body",
-        cursor: 'grab',
-        activeCursor: 'grabbing',
-
-        // ▼▼▼ TAMBAHKAN FUNGSI INI ▼▼▼
-        onPress: function() {
-            // Saat disentuh/diklik, angkat puzzle ke lapisan atas dan perbesar sedikit
-            gsap.to(this.target, { 
-            zIndex: 100, 
-            scale: 1.1, 
-            duration: 0.2, 
-            ease: 'power2.out' 
+          bounds: "body",
+          cursor: 'grab',
+          activeCursor: 'grabbing',
+          onPress: function () {
+            gsap.to(this.target, {
+              zIndex: 100,
+              scale: 1.1,
+              duration: 0.2,
+              ease: 'power2.out'
             });
-        },
-
-        // ▼▼▼ TAMBAHKAN FUNGSI INI ▼▼▼
-        onRelease: function() {
-            // Saat dilepas, kembalikan ke ukuran dan lapisan normal
-            gsap.to(this.target, { 
-            zIndex: 'auto', 
-            scale: 1, 
-            duration: 0.2 
+          },
+          onRelease: function () {
+            gsap.to(this.target, {
+              zIndex: 'auto',
+              scale: 1,
+              duration: 0.2
             });
-        },
-
-        onDragEnd: function() {
-            // (Logika onDragEnd yang sudah ada tidak perlu diubah, biarkan saja)
+          },
+          onDragEnd: function () {
             const pieceId = parseInt(this.target.dataset.pieceId);
             let droppedCorrectly = false;
 
             gsap.utils.toArray('.puzzle-slot').forEach(slot => {
-            const slotId = parseInt(slot.dataset.slotId);
-            if (this.hitTest(slot, "50%")) {
+              const slotId = parseInt(slot.dataset.slotId);
+              if (this.hitTest(slot, "50%")) {
                 if (pieceId === slotId) {
-                droppedCorrectly = true;
-                
-                const slotRect = slot.getBoundingClientRect();
-                const pieceRect = this.target.getBoundingClientRect();
-                
-                gsap.to(this.target, {
+                  droppedCorrectly = true;
+                  const slotRect = slot.getBoundingClientRect();
+                  const pieceRect = this.target.getBoundingClientRect();
+
+                  gsap.to(this.target, {
                     x: this.x + (slotRect.left - pieceRect.left) + (slotRect.width - pieceRect.width) / 2,
                     y: this.y + (slotRect.top - pieceRect.top) + (slotRect.height - pieceRect.height) / 2,
                     duration: 0.3,
                     ease: 'power2.out',
                     onComplete: () => {
-                    this.disable();
-                    gsap.set(this.target, { zIndex: 1 });
-                    setCorrectlyPlaced(prev => ({ ...prev, [slotId]: pieceId }));
-                    setSelectedEvent(timelineData.find(e => e.id === pieceId));
+                      this.disable();
+                      gsap.set(this.target, { zIndex: 1 });
+                      setCorrectlyPlaced(prev => ({ ...prev, [slotId]: pieceId }));
+                      setSelectedEvent(timelineData.find(e => e.id === pieceId));
                     }
-                });
+                  });
                 }
-            }
+              }
             });
 
             if (!droppedCorrectly) {
-            gsap.to(this.target, { x: 0, y: 0, duration: 0.5, ease: 'power3.out' });
+              gsap.to(this.target, { x: 0, y: 0, duration: 0.5, ease: 'power3.out' });
             }
-        }
+          }
         });
       }
     });
-  }, [pieces]); // Jalankan ulang GSAP jika susunan pieces berubah
+  }, [pieces]);
 
+  // Deteksi saat semua puzzle sudah benar
+  useEffect(() => {
+    if (Object.keys(correctlyPlaced).length === timelineData.length) {
+      setTimeout(() => {
+        setShowCongrats(true);
+      }, 500);
+    }
+  }, [correctlyPlaced]);
 
   const handleCloseModal = () => { setSelectedEvent(null); };
 
   return (
     <>
       <div className="w-full h-screen bg-gray-800 flex flex-col p-4 sm:p-8 overflow-hidden">
-        {/* Judul */}
         <div className="text-center text-white mb-4">
           <h1 className="text-2xl sm:text-4xl font-bold">Timeline Puzzle Informatika</h1>
           <p className="text-gray-300">Susunlah peristiwa berikut sesuai urutan tahunnya!</p>
         </div>
 
-        {/* === AREA ATAS: SLOT PUZZLE === */}
         <div className="z-10 w-full bg-black/20 rounded-xl p-4 flex justify-center items-center flex-wrap gap-4">
           {timelineData.map(slot => (
             <div
               key={slot.id}
-              data-slot-id={slot.id} // ID untuk pencocokan
-              className="puzzle-slot relative w-48 h-24 bg-gray-700/50 border-2 border-dashed border-gray-500 rounded-lg flex flex-col justify-center items-center text-white z-[50]"
+              data-slot-id={slot.id}
+              className="puzzle-slot relative  w-48 h-24 bg-gray-700/50 border-2 border-dashed border-gray-500 rounded-lg flex flex-col justify-center items-center text-white"
             >
               {correctlyPlaced[slot.id] ? (
-                // Jika sudah terisi benar, tampilkan kartu versi "sukses"
                 <div className="w-full h-full p-2 bg-green-600 rounded-lg flex flex-col justify-center items-center text-center">
-                   <p className="text-xl font-bold">{slot.year}</p>
-                   <p className="text-sm font-semibold">{slot.title}</p>
+                  <p className="text-xl font-bold">{slot.year}</p>
+                  <p className="text-sm font-semibold">{slot.title}</p>
                 </div>
               ) : (
-                // Jika masih kosong, tampilkan tahun sebagai petunjuk
                 <>
                   <p className="text-2xl font-bold">{slot.year}</p>
                   <p className="text-xs text-gray-400">Tempatkan di sini</p>
@@ -161,18 +151,15 @@ const TimelinePuzzle = () => {
           ))}
         </div>
 
-        {/* === AREA BAWAH: KEPINGAN PUZZLE === */}
         <div className="relative z-20 w-full sm:h-full h-48 bg-black/20 rounded-xl mt-4 p-4 flex justify-center items-center flex-wrap gap-4">
           {pieces.map((piece, index) => {
-            // Jangan render kepingan puzzle yang sudah diletakkan dengan benar
             if (correctlyPlaced[piece.id]) return null;
-
             return (
               <div
                 key={piece.id}
-                ref={el => pieceRefs.current[index] = el} // Simpan ref elemen ini
-                data-piece-id={piece.id} // ID untuk pencocokan
-                className="puzzle-piece w-48 h-24 p-2 bg-indigo-600 rounded-lg text-white text-center flex justify-center items-center cursor-grab shadow-lg z-[60]"
+                ref={el => pieceRefs.current[index] = el}
+                data-piece-id={piece.id}
+                className="puzzle-piece w-48 h-24 p-2 bg-indigo-600 rounded-lg text-white text-center flex justify-center items-center cursor-grab shadow-lg"
               >
                 <h3 className="text-md font-semibold">{piece.title}</h3>
               </div>
@@ -181,14 +168,30 @@ const TimelinePuzzle = () => {
         </div>
       </div>
 
-      {/* Modal akan muncul jika ada event yang dipilih */}
       {selectedEvent && createPortal(
         <EventModal event={selectedEvent} onClose={handleCloseModal} />,
+        document.body
+      )}
+
+      {/* Pop Up Es Teh */}
+      {showCongrats && createPortal(
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-[99999]">
+          <div className="bg-white text-green-700 text-center p-8 rounded-2xl shadow-2xl max-w-sm w-full animate-bounce-in">
+            <h2 className="text-2xl font-bold mb-4">🎉 Selamat! 🎉</h2>
+            <p className="text-lg">Anda berhasil menyusun semua puzzle dengan benar!</p>
+            <p className="text-xl mt-2 font-semibold">🥤 Anda mendapat <span className="text-indigo-600">es teh</span>!</p>
+            <button
+              onClick={() => setShowCongrats(false)}
+              className="mt-6 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>,
         document.body
       )}
     </>
   );
 };
 
-// Ganti nama ekspor default
 export default TimelinePuzzle;
