@@ -8,4 +8,7 @@ body {
 /* Untuk smooth scroll global sederhana, ScrollSmoother GSAP lebih canggih */
 html {
   scroll-behavior: smooth;
+  overflow: auto; /* tetap bisa scroll */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
