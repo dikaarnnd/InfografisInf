@@ -27,7 +27,7 @@ const EventModal = ({ event, onClose }) => {
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="bg-white/90 backdrop-blur-xl rounded-xl shadow-2xl max-w-lg w-full relative text-gray-800"
+        className="m-5 bg-white/90 backdrop-blur-xl rounded-xl shadow-2xl max-w-lg w-full relative text-gray-800"
       >
         <button 
           onClick={handleClose} 
@@ -102,19 +102,34 @@ const Timeline = () => {
         <div className="timeline-draggable flex items-center h-full px-16 z-10"> {/* Memberi class untuk selector GSAP */}
           <div className="absolute top-1/2 left-0 w-full h-1 bg-indigo-400 opacity-50 transform -translate-y-1/2" style={{ transformOrigin: 'left' }}></div>
           
-          {timelineData.map((event, index) => (
-            <div 
-              key={event.id} 
-              className="flex flex-col items-center mx-16 flex-shrink-0 relative cursor-pointer group"
-              onClick={() => handleEventClick(event)}
-            >
-              <div className="w-6 h-6 bg-white rounded-full border-4 border-indigo-500 z-10 group-hover:scale-125 transition-transform duration-300"></div>
-              <div className={`p-4 bg-gray-800 rounded-lg shadow-lg w-64 text-center transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-indigo-500/50 ${index % 2 !== 0 ? 'mb-40' : 'mt-40'}`}>
-                <p className="text-2xl font-bold text-indigo-400">{event.year}</p>
-                <h3 className="text-lg font-semibold mt-2">{event.title}</h3>
+          {timelineData.map((event, index) => {
+            // Menentukan apakah posisi item ini di atas atau di bawah
+            const isTopPosition = index % 2 !== 0;
+
+            return (
+              <div
+                key={event.id}
+                // PERBAIKAN UTAMA DI SINI:
+                // 1. Seluruh grup diberi margin atas/bawah untuk memindahkannya
+                // 2. 'flex-col-reverse' digunakan untuk item atas
+                // 3. 'gap-y-4' memberi jarak konsisten antara titik dan kartu
+                className={`flex items-center mx-8 flex-shrink-0 relative cursor-pointer group
+                  ${isTopPosition ? 'flex-col-reverse -mb-25' : 'flex-col -mt-25'}
+                `}
+                onClick={() => handleEventClick(event)}
+              >
+                {/* Kartu Informasi (tidak ada lagi margin besar di sini) */}
+                <div className="p-4 bg-gray-800 rounded-lg shadow-lg w-64 text-center transition-transform duration-300 group-hover:scale-105">
+                  <p className="text-2xl font-bold text-indigo-400">{event.year}</p>
+                  <h3 className="text-lg font-semibold mt-2">{event.title}</h3>
+                </div>
+
+                {/* Titik Timeline */}
+                <div className="w-6 h-6 bg-white rounded-full border-4 border-indigo-500 z-10 group-hover:scale-125 transition-transform duration-300"></div>
+
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       
