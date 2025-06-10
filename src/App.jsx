@@ -44,8 +44,8 @@ function App() {
         {/* <DraggableElementSection /> */}
         {/* <InteractivePathSection /> */}
         {/* <Timeline /> */}
-        {/* <TimelinePuzzle /> */}
-        <TimelinePuzzle2 />
+        <TimelinePuzzle />
+        {/* <TimelinePuzzle2 /> */}
         
       </main>
       {/* <Footer /> */}

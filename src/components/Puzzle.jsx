@@ -14,13 +14,13 @@ const EventModal = ({ event, onClose }) => {
   const handleClose = (e) => { e.stopPropagation(); onClose(); };
   return (
     <div onClick={handleClose} className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[9999]">
-      <div onClick={(e) => e.stopPropagation()} className="m-5 bg-white/90 backdrop-blur-xl rounded-xl shadow-2xl max-w-lg w-full relative text-gray-800">
+      <div onClick={(e) => e.stopPropagation()} className="m-2 sm:m-5 bg-white/90 backdrop-blur-xl rounded-xl shadow-2xl max-w-[90vw] w-full sm:max-w-lg relative text-gray-800">
         <button onClick={handleClose} className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-9 h-9 flex items-center justify-center text-xl font-bold hover:bg-red-700 transition-all duration-300 transform hover:scale-110">&times;</button>
-        <img src={event.imageSrc} alt={event.title} className="w-full h-56 object-cover rounded-t-xl" />
-        <div className="p-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">{event.title}</h2>
-          <p className="text-xl text-indigo-600 font-semibold mb-4">{event.year}</p>
-          <p className="text-gray-700 leading-relaxed">{event.description}</p>
+        <img src={event.imageSrc} alt={event.title} className="w-full h-40 sm:h-56 object-cover rounded-t-xl" />
+        <div className="p-4 sm:p-6">
+          <h2 className="text-xl sm:text-3xl font-bold text-gray-900 mb-2">{event.title}</h2>
+          <p className="text-lg sm:text-xl text-indigo-600 font-semibold mb-4">{event.year}</p>
+          <p className="text-gray-700 text-sm sm:text-base leading-relaxed">{event.description}</p>
         </div>
       </div>
     </div>
@@ -34,6 +34,25 @@ const TimelinePuzzle = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [showWrong, setShowWrong] = useState(false);
   const pieceRefs = useRef([]);
+  const containerRef = useRef(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  // Ukuran dinamis berdasarkan layar
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const { width } = containerRef.current.getBoundingClientRect();
+        setDimensions({
+          width,
+          height: window.innerHeight
+        });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
 
   useEffect(() => {
     const shuffleArray = (array) => {
@@ -118,37 +137,74 @@ const TimelinePuzzle = () => {
     setSelectedEvent(null);
   };
 
+  // Hitung ukuran dinamis untuk slot dan kepingan
+  const calculateSize = () => {
+    if (dimensions.width === 0) return { width: 100, height: 60 };
+    
+    // Untuk layar sangat kecil (<320px)
+    if (dimensions.width < 320) {
+      return { width: dimensions.width * 0.9, height: 60 };
+    }
+    
+    // Untuk layar kecil (320px - 468px)
+    if (dimensions.width <= 468) {
+      const size = Math.min(dimensions.width * 0.45, 160);
+      return { width: size, height: size * 0.6 };
+    }
+    
+    // Untuk tablet (768px)
+    if (dimensions.width <= 768) {
+      return { width: 140, height: 80 };
+    }
+    
+    // Untuk desktop (>768px)
+    return { width: 180, height: 100 };
+  };
+
+  const { width, height } = calculateSize();
+
   return (
     <>
-      <div className="w-full h-screen bg-gray-800 flex flex-col p-4 sm:p-8 overflow-hidden">
-        <div className="text-center text-white mb-4">
-          <h1 className="text-2xl sm:text-4xl font-bold">Timeline Puzzle Informatika</h1>
-          <p className="text-gray-300">Susunlah peristiwa berikut sesuai urutan tahunnya!</p>
+      <div 
+        ref={containerRef}
+        className="w-full min-h-screen bg-gray-800 flex flex-col p-2 sm:p-4 md:p-8 overflow-hidden"
+      >
+        <div className="text-center text-white mb-2 sm:mb-4 px-1">
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-bold">Timeline Puzzle Informatika</h1>
+          <p className="text-gray-300 text-xs sm:text-sm md:text-base mt-1">
+            Susunlah peristiwa berikut sesuai urutan tahunnya!
+          </p>
         </div>
 
-        <div className="z-10 w-full bg-black/20 rounded-xl p-4 flex justify-center items-center flex-wrap gap-4">
+        <div className="z-10 w-full bg-black/20 rounded-lg sm:rounded-xl p-2 flex justify-center items-center flex-wrap gap-2 sm:gap-3 md:gap-4">
           {timelineData.map(slot => (
             <div
               key={slot.id}
               data-slot-id={slot.id}
-              className="puzzle-slot relative w-48 h-24 bg-gray-700/50 border-2 border-dashed border-gray-500 rounded-lg flex flex-col justify-center items-center text-white"
+              className="puzzle-slot relative bg-gray-700/50 border-2 border-dashed border-gray-500 rounded-md sm:rounded-lg flex flex-col justify-center items-center text-white z-[50]"
+              style={{
+                width: `${width}px`,
+                height: `${height}px`,
+                minWidth: `${width}px`,
+                minHeight: `${height}px`
+              }}
             >
               {correctlyPlaced[slot.id] ? (
-                <div className="w-full h-full p-2 bg-green-600 rounded-lg flex flex-col justify-center items-center text-center">
-                  <p className="text-xl font-bold">{slot.year}</p>
-                  <p className="text-sm font-semibold">{slot.title}</p>
+                <div className="w-full h-full p-1 bg-green-600 rounded-md sm:rounded-lg flex flex-col justify-center items-center text-center">
+                  <p className="text-xs sm:text-sm md:text-lg font-bold">{slot.year}</p>
+                  <p className="text-[8px] sm:text-xs line-clamp-1">{slot.title}</p>
                 </div>
               ) : (
                 <>
-                  <p className="text-2xl font-bold">{slot.year}</p>
-                  <p className="text-xs text-gray-400">Tempatkan di sini</p>
+                  <p className="text-sm sm:text-base md:text-xl font-bold">{slot.year}</p>
+                  <p className="text-[8px] sm:text-[10px] text-gray-400">Tempatkan di sini</p>
                 </>
               )}
             </div>
           ))}
         </div>
 
-        <div className="relative z-20 w-full sm:h-full h-48 bg-black/20 rounded-xl mt-4 p-4 flex justify-center items-center flex-wrap gap-4">
+        <div className="relative z-20 w-full flex-grow bg-black/20 rounded-lg sm:rounded-xl mt-2 sm:mt-4 p-2 flex justify-center items-start flex-wrap gap-2 sm:gap-3 md:gap-4 ">
           {pieces.map((piece, index) => {
             if (correctlyPlaced[piece.id]) return null;
             return (
@@ -156,9 +212,17 @@ const TimelinePuzzle = () => {
                 key={piece.id}
                 ref={el => pieceRefs.current[index] = el}
                 data-piece-id={piece.id}
-                className="puzzle-piece w-48 h-24 p-2 bg-indigo-600 rounded-lg text-white text-center flex justify-center items-center cursor-grab shadow-lg"
+                className="puzzle-piece p-1 bg-indigo-600 rounded-md sm:rounded-lg text-white text-center flex justify-center items-center cursor-grab shadow-lg z-[60]"
+                style={{
+                  width: `${width}px`,
+                  height: `${height}px`,
+                  minWidth: `${width}px`,
+                  minHeight: `${height}px`
+                }}
               >
-                <h3 className="text-md font-semibold">{piece.title}</h3>
+                <h3 className="text-[9px] sm:text-xs md:text-sm font-semibold line-clamp-2">
+                  {piece.title}
+                </h3>
               </div>
             );
           })}
@@ -171,26 +235,25 @@ const TimelinePuzzle = () => {
       )}
 
       {showPopup && createPortal(
-  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[9999]" onClick={() => setShowPopup(false)}>
-    <div
-      className="relative bg-white text-green-700 text-3xl font-bold px-8 py-6 rounded-xl shadow-xl animate-bounce"
-      onClick={(e) => e.stopPropagation()}
-    >
-      🎉 Selamat! Anda mendapat es teh!
-      <button
-        onClick={() => setShowPopup(false)}
-        className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 text-white rounded-full text-lg flex items-center justify-center hover:bg-red-700 transition-transform hover:scale-110"
-      >
-        &times;
-      </button>
-    </div>
-  </div>,
-  document.body
-)}
-
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[9999]" onClick={() => setShowPopup(false)}>
+          <div
+            className="relative bg-white text-green-700 px-4 py-4 sm:px-8 sm:py-6 rounded-xl shadow-xl animate-bounce text-xl sm:text-2xl md:text-3xl font-bold"
+            onClick={(e) => e.stopPropagation()}
+          >
+            🎉 Selamat! Anda mendapat es teh!
+            <button
+              onClick={() => setShowPopup(false)}
+              className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 text-white rounded-full text-lg flex items-center justify-center hover:bg-red-700 transition-transform hover:scale-110"
+            >
+              &times;
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {showWrong && createPortal(
-        <div className="fixed top-6 right-6 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-[9999] animate-slide-fade">
+        <div className="fixed top-6 right-6 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-[9999] animate-slide-fade text-sm sm:text-base">
           ❌ Salah cuyy!
         </div>,
         document.body
