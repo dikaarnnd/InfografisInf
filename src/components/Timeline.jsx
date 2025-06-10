@@ -59,23 +59,49 @@ const EventModal = ({ event, onClose }) => {
 const Timeline = () => {
   const containerRef = useRef(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  
 
   useGSAP(() => {
-    // ... (Logika GSAP tidak perlu diubah) ...
     const timelineRef = containerRef.current.querySelector('.timeline-draggable');
+    
+    // --- Langkah 1: Hitung semua posisi titik henti (snap points) ---
+    const elements = gsap.utils.toArray('.timeline-event');
+    const containerWidth = containerRef.current.offsetWidth;
+    
+    // Array ini akan menampung koordinat x dari setiap event agar bisa berada di tengah layar
+    const snapPoints = elements.map(el => {
+      const center = el.offsetLeft + el.offsetWidth / 2;
+      // Rumus untuk menggeser timeline agar elemen 'el' berada di tengah layar
+      return (containerWidth / 2) - center;
+    });
+
+    // Inisialisasi animasi intro (tidak diubah)
+    const tl = gsap.timeline();
+    tl.from(".intro-title", { opacity: 0, y: -50, duration: 1, ease: "power3.out" });
+    tl.from(".timeline-line", { scaleX: 0, duration: 1, ease: "power2.inOut" }, "-=0.5");
+    tl.from(".timeline-event", { opacity: 0, scale: 0.5, duration: 0.5, ease: "back.out(1.7)", stagger: 0.15 }, "-=0.5");
+    
+
+    // --- Langkah 2: Buat Draggable dengan properti inertia dan snap ---
     Draggable.create(timelineRef, {
-        type: 'x',
-        edgeResistance: 0.9,
-        bounds: containerRef.current,
-        inertia: true,
-        cursor: 'grab',
-        activeCursor: 'grabbing',
-        onDrag: function() {
-            const bgColors = timelineData.map(item => item.bgColor);
-            const progress = gsap.utils.normalize(0, this.minX, this.x);
-            const newColor = gsap.utils.interpolate(bgColors, progress);
-            gsap.to(containerRef.current, { backgroundColor: newColor, duration: 0.5, ease: 'power2.out' });
-        }
+      type: 'x',
+      edgeResistance: 0.9,
+      bounds: containerRef.current,
+      cursor: 'grab',
+      activeCursor: 'grabbing',
+      
+      // Properti inertia diubah menjadi sebuah objek untuk konfigurasi lebih lanjut
+      inertia: {
+        // 'snap' akan membuat gerakan berhenti di titik terdekat dalam array
+        snap: (endValue) => gsap.utils.snap(snapPoints, endValue)
+      },
+
+      onDrag: function() {
+        const bgColors = timelineData.map(item => item.bgColor);
+        const progress = gsap.utils.normalize(0, this.minX, this.x);
+        const newColor = gsap.utils.interpolate(bgColors, progress);
+        gsap.to(containerRef.current, { backgroundColor: newColor, duration: 0.5, ease: 'power2.out' });
+      }
     });
   }, { scope: containerRef });
 
@@ -94,7 +120,7 @@ const Timeline = () => {
         style={{ backgroundColor: timelineData[0].bgColor }}
         className="w-full h-screen text-white overflow-hidden flex items-center relative"
       >
-        <div className="absolute top-5 left-5 z-20 bg-black/50 p-3 rounded-lg">
+        <div className="absolute top-10 z-20 bg-black/50 p-3 rounded-lg items-center">
           <h1 className="text-2xl font-bold">Time Travel Informatika</h1>
           <p className="text-gray-300">Klik dan geser untuk menjelajah</p>
         </div>
